@@ -4,29 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PEDIDOS DOÑA JANNA</title>
-  <link rel="stylesheet" href="estilos.css"> <!-- Enlace a tu archivo CSS -->
+  <link rel="stylesheet" href="estilos.css">
   <style>
     /* Agregamos algo de margen entre los campos */
     .campo {
-      margin-bottom: 15px; /* Espacio entre campos */
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Imagen arriba del título -->
     <img src="JANNA.PNG" alt="Logo de Doña Janna" width="300">
+
     <h1>PEDIDOS DOÑA JANNA</h1>
 
     <!-- Nombre del Cliente -->
     <label for="nombre_cliente">Nombre del Cliente:</label>
-    <input type="text" id="nombre_cliente" placeholder="Ingrese su nombre" class="campo" name="nombre_cliente">
+    <input type="text" id="nombre_cliente" placeholder="Ingrese su nombre" class="campo">
 
     <!-- Fecha de Entrega (para todo el pedido) -->
     <label for="fecha_entrega">Fecha de Entrega:</label>
     <input type="date" id="fecha_entrega" name="fecha_entrega" required class="campo">
 
     <!-- Formulario de pedido -->
-    <form id="formularioPedido" name="pedido" method="POST" data-netlify="true">
+    <form id="formularioPedido">
       <label for="codigo_producto">Código del Producto:</label>
       <input type="text" id="codigo_producto" name="codigo_producto" required class="campo">
 
@@ -54,6 +56,80 @@
     <button type="button" onclick="realizarPedido()">Realizar Pedido</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // Función que agrega un producto a la factura
+    let pedido = [];
+    function agregarProducto() {
+      const codigoProducto = document.getElementById("codigo_producto").value.trim();
+      const cantidad = parseInt(document.getElementById("cantidad").value);
+
+      if (!codigoProducto) {
+        alert("Por favor ingresa un código de producto.");
+        return;
+      }
+
+      if (isNaN(cantidad) || cantidad <= 0) {
+        alert("Por favor ingresa una cantidad válida.");
+        return;
+      }
+
+      const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
+      const nuevaFila = tabla.insertRow();
+      const celdaCodigo = nuevaFila.insertCell(0);
+      const celdaCantidad = nuevaFila.insertCell(1);
+
+      celdaCodigo.textContent = codigoProducto;
+      celdaCantidad.textContent = cantidad;
+
+      // Agregar el producto al pedido
+      pedido.push({
+        codigo: codigoProducto,
+        cantidad: cantidad,
+      });
+
+      // Limpiar los campos del formulario
+      document.getElementById("codigo_producto").value = "";
+      document.getElementById("cantidad").value = "";
+    }
+
+    // Función para realizar el pedido y enviarlo a Google Sheets
+    function realizarPedido() {
+      const nombreCliente = document.getElementById("nombre_cliente").value.trim();
+      const fechaEntrega = document.getElementById("fecha_entrega").value;
+
+      // Validación de los campos
+      if (!nombreCliente || !fechaEntrega || pedido.length === 0) {
+        alert("Por favor, asegúrate de llenar todos los campos correctamente.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("nombre_cliente", nombreCliente);
+      formData.append("fecha_entrega", fechaEntrega);
+      formData.append("pedido", JSON.stringify(pedido));
+
+      // Enviar los datos al script de Google Apps (Web App)
+      fetch("https://script.google.com/macros/s/AKfycbxqrG9MzhLfbU4vdMV17_selJOU41mIdk9df1NzFBWf0LB-PwxZljfbmPU-VMScKP5A/exec", {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.result === "success") {
+          alert("¡Pedido realizado con éxito!");
+          // Limpiar los campos después de enviar el pedido
+          document.getElementById("nombre_cliente").value = "";
+          document.getElementById("fecha_entrega").value = "";
+          document.getElementById("tablaFactura").getElementsByTagName('tbody')[0].innerHTML = "";
+          pedido = [];
+        } else {
+          alert("Hubo un error al realizar el pedido.");
+        }
+      })
+      .catch(error => {
+        alert("Error: " + error.message);
+      });
+    }
+  </script>
 </body>
 </html>
