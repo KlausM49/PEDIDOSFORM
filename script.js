@@ -1,4 +1,8 @@
-
+function doPost(e) {
+  // Obtener los datos enviados desde el formulario
+  var fechaEntrega = e.parameter.fecha_entrega;  // Fecha de entrega
+  var codigoProducto = e.parameter.codigo_producto;  // Código del producto
+  var cantidad = e.parameter.cantidad;  // Cantidad
 // Productos predefinidos con sus códigos, nombres y precios
 const productos = [
  {"Codigo": "00101","Producto": "MANJAR DE LECHE 250GR","Precio Unitario": 1.08812},
