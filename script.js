@@ -5054,18 +5054,21 @@
   {"Codigo": "PT999", "Producto": "SALSA CHINA A GRANEL"}
 ];
 
+// Función para autocompletar el nombre del producto basado en el código
 function autocompletarNombre() {
   const codigoProducto = document.getElementById("codigo_producto").value.trim();
   const productoEncontrado = productos.find(prod => prod.Codigo === codigoProducto);
   return productoEncontrado ? productoEncontrado.Producto : "";
 }
 
+// Función para agregar un producto a la tabla de la factura
 function agregarProducto() {
   const codigoProducto = document.getElementById("codigo_producto").value.trim();
   const cantidad = document.getElementById("cantidad").value.trim();
   const nombreCliente = document.getElementById("nombre_cliente").value.trim();
   const nombreProducto = autocompletarNombre();
 
+  // Validación: Verificar que todos los campos estén completos
   if (!codigoProducto || !cantidad || !nombreCliente) {
     alert("Por favor, ingresa todos los datos del producto.");
     return;
@@ -5076,21 +5079,23 @@ function agregarProducto() {
     return;
   }
 
-  // Agregar a la tabla de factura
+  // Agregar el producto a la tabla de factura
   const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
   const nuevaFila = tabla.insertRow();
-  nuevaFila.innerHTML = `<td>${codigoProducto}</td><td>${nombreProducto}</td><td>${cantidad}</td><td>${nombreCliente}</td>`;
+  nuevaFila.innerHTML = `<td>${codigoProducto}</td><td>${nombreProducto}</td><td>${cantidad}</td>`;
 
   // Limpiar los campos después de agregar el producto
   document.getElementById("codigo_producto").value = "";
   document.getElementById("cantidad").value = "";
 }
 
+// Función para realizar el pedido
 function realizarPedido() {
   const fechaEntrega = document.getElementById("fecha_entrega").value;
   const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
   const filas = tabla.getElementsByTagName("tr");
 
+  // Validación: Verificar que la fecha de entrega y la tabla no estén vacíos
   if (!fechaEntrega || filas.length === 0) {
     alert("Por favor, completa todos los datos antes de realizar el pedido.");
     return;
@@ -5102,8 +5107,7 @@ function realizarPedido() {
     productos.push({
       codigo: columnas[0].innerText,
       producto: columnas[1].innerText,
-      cantidad: columnas[2].innerText,
-      cliente: columnas[3].innerText
+      cantidad: columnas[2].innerText
     });
   }
 
