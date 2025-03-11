@@ -1,10 +1,57 @@
-function doPost(e) {
-  // Obtener los datos enviados desde el formulario
-  var fechaEntrega = e.parameter.fecha_entrega;  // Fecha de entrega
-  var codigoProducto = e.parameter.codigo_producto;  // Código del producto
-  var cantidad = e.parameter.cantidad;  // Cantidad
-// Productos predefinidos con sus códigos, nombres y precios
-const productos = [
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEDIDOS DOÑA JANNA</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div class="container">
+    <img src="JANNA.PNG" alt="Logo de Doña Janna" width="300">
+    <h1>PEDIDOS DOÑA JANNA</h1>
+
+    <!-- Nombre del Cliente -->
+    <label for="nombre_cliente">Nombre del Cliente:</label>
+    <input type="text" id="nombre_cliente" required class="campo">
+
+    <!-- Fecha de Entrega -->
+    <label for="fecha_entrega">Fecha de Entrega:</label>
+    <input type="date" id="fecha_entrega" required class="campo">
+
+    <!-- Formulario de pedido -->
+    <form id="formularioPedido">
+      <label for="codigo_producto">Código del Producto:</label>
+      <input type="text" id="codigo_producto" required class="campo">
+
+      <label for="cantidad">Cantidad:</label>
+      <input type="number" id="cantidad" min="1" required class="campo">
+
+      <!-- Botón para agregar productos a la factura -->
+      <button type="button" onclick="agregarProducto()">Añadir Producto</button>
+    </form>
+
+    <h2>Factura</h2>
+    <table id="tablaFactura">
+      <thead>
+        <tr>
+          <th>Código Producto</th>
+          <th>Producto</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aquí se agregarán los productos -->
+      </tbody>
+    </table>
+
+    <!-- Botón para enviar el pedido -->
+    <button type="button" onclick="realizarPedido()">Realizar Pedido</button>
+  </div>
+
+  <script>
+    // Productos predefinidos con códigos y nombres
+    const productos = [
  {"Codigo": "00101","Producto": "MANJAR DE LECHE 250GR","Precio Unitario": 1.08812},
  {"Codigo": "00335","Producto": "LAVANDA HOJA","Precio Unitario": 5},
  {"Codigo": "00336","Producto": "IZO","Precio Unitario": 4},
@@ -5005,112 +5052,105 @@ const productos = [
   {"Codigo": "PT953", "Producto": "FRUTA CONFITADA IMPORTADA"},
   {"Codigo": "PT954", "Producto": "VINAGRE DE MANZANA"},
   {"Codigo": "PT999", "Producto": "SALSA CHINA A GRANEL"}
-];
+    ];
 
-// Array para almacenar los productos del pedido
-let pedido = [];
+    let pedido = []; // Array para almacenar los productos del pedido
 
-// Función para agregar un producto al pedido
-function agregarProducto() {
-  const codigoProducto = document.getElementById("codigo_producto").value.trim();
-  const cantidad = parseInt(document.getElementById("cantidad").value);
+    function agregarProducto() {
+      const codigoProducto = document.getElementById("codigo_producto").value.trim();
+      const cantidad = parseInt(document.getElementById("cantidad").value);
 
-  // Validación
-  if (!codigoProducto) {
-    alert("Por favor ingresa un código de producto.");
-    return;
-  }
+      if (!codigoProducto) {
+        alert("Por favor ingresa un código de producto.");
+        return;
+      }
 
-  if (isNaN(cantidad) || cantidad <= 0) {
-    alert("Por favor ingresa una cantidad válida.");
-    return;
-  }
+      if (isNaN(cantidad) || cantidad <= 0) {
+        alert("Por favor ingresa una cantidad válida.");
+        return;
+      }
 
-  const producto = productos.find(prod => prod.Codigo === codigoProducto);
+      const producto = productos.find(prod => prod.Codigo === codigoProducto);
 
-  if (producto) {
-    // Crear una nueva fila en la tabla de la factura
-    const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
-    const nuevaFila = tabla.insertRow();
+      if (producto) {
+        // Agregar el producto a la factura
+        const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
+        const nuevaFila = tabla.insertRow();
 
-    const celdaCodigo = nuevaFila.insertCell(0);
-    const celdaProducto = nuevaFila.insertCell(1);
-    const celdaCantidad = nuevaFila.insertCell(2);
+        const celdaCodigo = nuevaFila.insertCell(0);
+        const celdaProducto = nuevaFila.insertCell(1);
+        const celdaCantidad = nuevaFila.insertCell(2);
 
-    celdaCodigo.textContent = codigoProducto;
-    celdaProducto.textContent = producto.Producto;
-    celdaCantidad.textContent = cantidad;
+        celdaCodigo.textContent = codigoProducto;
+        celdaProducto.textContent = producto.Producto;
+        celdaCantidad.textContent = cantidad;
 
-    // Agregar el producto al arreglo del pedido
-    pedido.push({
-      codigo: codigoProducto,
-      cantidad: cantidad,
-      producto: producto.Producto
-    });
+        // Agregar el producto al array del pedido
+        pedido.push({
+          codigo: codigoProducto,
+          producto: producto.Producto,
+          cantidad: cantidad
+        });
 
-    // Limpiar los campos del formulario
-    document.getElementById("codigo_producto").value = "";
-    document.getElementById("cantidad").value = "";
-  } else {
-    alert("Producto no encontrado. Verifica el código del producto.");
-  }
-}
+        // Limpiar los campos del formulario
+        document.getElementById("codigo_producto").value = "";
+        document.getElementById("cantidad").value = "";
+      } else {
+        alert("Producto no encontrado. Verifica el código.");
+      }
+    }
 
-// Función para realizar el pedido
-function realizarPedido() {
-  const nombreCliente = document.getElementById("nombre_cliente").value.trim();
-  const fechaEntrega = document.getElementById("fecha_entrega").value;
+    function realizarPedido() {
+      const nombreCliente = document.getElementById("nombre_cliente").value.trim();
+      const fechaEntrega = document.getElementById("fecha_entrega").value;
 
-  if (!nombreCliente) {
-    alert("Por favor ingresa el nombre del cliente.");
-    return;
-  }
+      if (!nombreCliente) {
+        alert("Por favor ingresa el nombre del cliente.");
+        return;
+      }
 
-  if (!fechaEntrega) {
-    alert("Por favor, ingresa una fecha de entrega.");
-    return;
-  }
+      if (!fechaEntrega) {
+        alert("Por favor, ingresa una fecha de entrega.");
+        return;
+      }
 
-  if (pedido.length === 0) {
-    alert("No has agregado productos. Por favor, agrega productos antes de realizar el pedido.");
-    return;
-  }
+      if (pedido.length === 0) {
+        alert("No has agregado productos. Agrega productos antes de realizar el pedido.");
+        return;
+      }
 
-  const confirmacion = confirm("¿Deseas confirmar el pedido?");
-  
-  if (confirmacion) {
-    // Agregar los productos al formulario
-    const formulario = document.getElementById("formularioPedido");
+      const confirmacion = confirm("¿Deseas confirmar el pedido?");
+      
+      if (confirmacion) {
+        const formData = new FormData();
+        formData.append('fecha_entrega', fechaEntrega);
+        formData.append('nombre_cliente', nombreCliente);
+        formData.append('productos', JSON.stringify(pedido));
 
-    // Crear un campo oculto para los productos y agregarlo al formulario
-    const campoProductos = document.createElement("input");
-    campoProductos.type = "hidden";
-    campoProductos.name = "productos";  // El nombre del campo será "productos"
-    campoProductos.value = JSON.stringify(pedido);  // Convertimos el array 'pedido' a JSON
-    formulario.appendChild(campoProductos);
-
-    // Agregar nombre y fecha de entrega al formulario
-    const campoNombre = document.createElement("input");
-    campoNombre.type = "hidden";
-    campoNombre.name = "nombre_cliente";
-    campoNombre.value = nombreCliente;
-    formulario.appendChild(campoNombre);
-
-    const campoFecha = document.createElement("input");
-    campoFecha.type = "hidden";
-    campoFecha.name = "fecha_entrega";
-    campoFecha.value = fechaEntrega;
-    formulario.appendChild(campoFecha);
-
-    // Enviar el formulario
-    formulario.submit();
-
-    // Limpiar la tabla de la factura y el pedido
-    document.getElementById("tablaFactura").getElementsByTagName('tbody')[0].innerHTML = "";
-    pedido = [];
-    document.getElementById("nombre_cliente").value = "";
-    document.getElementById("fecha_entrega").value = "";
-  } else {
-    alert("El pedido no se ha realizado.");
-  }
-}
+        fetch("https://script.google.com/macros/s/AKfycbxi3VW4ZrAa8vGPoHdzFOeAL_gy11DZQXIbiwpDU7JAsvj7VbUfFz4ykeAH6muppi5a/exec", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            alert("¡Pedido realizado con éxito!");
+            // Limpiar formulario y tabla
+            document.getElementById("fecha_entrega").value = "";
+            document.getElementById("nombre_cliente").value = "";
+            document.getElementById("tablaFactura").getElementsByTagName('tbody')[0].innerHTML = "";
+            pedido = [];
+          } else {
+            alert("Error en el pedido: " + data.message);
+          }
+        })
+        .catch(error => {
+          alert("Error: " + error.message);
+        });
+      } else {
+        alert("El pedido no se ha realizado.");
+      }
+    }
+  </script>
+</body>
+</html>
