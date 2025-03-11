@@ -17,24 +17,21 @@
     <div class="form-group">
       <div>
         <label for="fecha_entrega">Fecha de Entrega:</label>
-        <input type="date" id="fecha_entrega" name="fecha_entrega" required class="campo">
+        <input type="date" id="fecha_entrega" required class="campo">
       </div>
       <div>
         <label for="nombre_cliente">Nombre del Cliente:</label>
-        <input type="text" id="nombre_cliente" name="nombre_cliente" required class="campo">
+        <input type="text" id="nombre_cliente" required class="campo">
       </div>
     </div>
 
     <!-- Formulario de pedido -->
     <form id="formularioPedido">
       <label for="codigo_producto">Código del Producto:</label>
-      <input type="text" id="codigo_producto" name="codigo_producto" required class="campo">
-
-      <label for="producto">Nombre del Producto:</label>
-      <input type="text" id="producto" name="producto" required class="campo">
+      <input type="text" id="codigo_producto" required class="campo" oninput="autocompletarNombre()">
 
       <label for="cantidad">Cantidad:</label>
-      <input type="number" id="cantidad" name="cantidad" min="1" required class="campo">
+      <input type="number" id="cantidad" min="1" required class="campo">
 
       <!-- Botón para añadir producto a la factura -->
       <button type="button" onclick="agregarProducto()">Añadir Producto</button>
@@ -60,78 +57,8 @@
 
   </div>
 
-  <script>
-    function agregarProducto() {
-      const codigoProducto = document.getElementById("codigo_producto").value.trim();
-      const producto = document.getElementById("producto").value.trim();
-      const cantidad = document.getElementById("cantidad").value.trim();
-      const nombreCliente = document.getElementById("nombre_cliente").value.trim();
-
-      if (!codigoProducto || !producto || !cantidad || !nombreCliente) {
-        alert("Por favor, ingresa todos los datos del producto.");
-        return;
-      }
-
-      // Agregar a la tabla de factura
-      const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
-      const nuevaFila = tabla.insertRow();
-      nuevaFila.innerHTML = `<td>${codigoProducto}</td><td>${producto}</td><td>${cantidad}</td><td>${nombreCliente}</td>`;
-
-      // Limpiar los campos después de agregar el producto
-      document.getElementById("codigo_producto").value = "";
-      document.getElementById("producto").value = "";
-      document.getElementById("cantidad").value = "";
-    }
-
-    function realizarPedido() {
-      const fechaEntrega = document.getElementById("fecha_entrega").value;
-      const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
-      const filas = tabla.getElementsByTagName("tr");
-
-      if (!fechaEntrega || filas.length === 0) {
-        alert("Por favor, completa todos los datos antes de realizar el pedido.");
-        return;
-      }
-
-      let productos = [];
-      for (let fila of filas) {
-        const columnas = fila.getElementsByTagName("td");
-        productos.push({
-          codigo: columnas[0].innerText,
-          producto: columnas[1].innerText,
-          cantidad: columnas[2].innerText,
-          cliente: columnas[3].innerText
-        });
-      }
-
-      const formData = new FormData();
-      formData.append('fecha_entrega', fechaEntrega);
-      formData.append('productos', JSON.stringify(productos));
-
-      // URL del Google Apps Script (tu URL aquí)
-      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxi3VW4ZrAa8vGPoHdzFOeAL_gy11DZQXIbiwpDU7JAsvj7VbUfFz4ykeAH6muppi5a/exec";
-
-      fetch(googleScriptUrl, {
-        method: "POST",
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.result === "success") {
-          alert("¡Pedido realizado con éxito!");
-          document.getElementById("fecha_entrega").value = "";
-          document.getElementById("nombre_cliente").value = "";
-          tabla.innerHTML = ""; // Limpiar la tabla después de enviar el pedido
-        } else {
-          alert("Hubo un error al realizar el pedido: " + data.message);
-        }
-      })
-      .catch(error => {
-        alert("Error: " + error.message);
-      });
-    }
-  </script>
-
+  <script src="script.js"></script> <!-- Aquí se incluye el archivo JS -->
+  
   <style>
     .form-group {
       display: flex;
