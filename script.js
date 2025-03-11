@@ -5052,105 +5052,84 @@
   {"Codigo": "PT953", "Producto": "FRUTA CONFITADA IMPORTADA"},
   {"Codigo": "PT954", "Producto": "VINAGRE DE MANZANA"},
   {"Codigo": "PT999", "Producto": "SALSA CHINA A GRANEL"}
-    ];
+];
 
-    let pedido = []; // Array para almacenar los productos del pedido
+function autocompletarNombre() {
+  const codigoProducto = document.getElementById("codigo_producto").value.trim();
+  const productoEncontrado = productos.find(prod => prod.Codigo === codigoProducto);
+  return productoEncontrado ? productoEncontrado.Producto : "";
+}
 
-    function agregarProducto() {
-      const codigoProducto = document.getElementById("codigo_producto").value.trim();
-      const cantidad = parseInt(document.getElementById("cantidad").value);
+function agregarProducto() {
+  const codigoProducto = document.getElementById("codigo_producto").value.trim();
+  const cantidad = document.getElementById("cantidad").value.trim();
+  const nombreCliente = document.getElementById("nombre_cliente").value.trim();
+  const nombreProducto = autocompletarNombre();
 
-      if (!codigoProducto) {
-        alert("Por favor ingresa un código de producto.");
-        return;
-      }
+  if (!codigoProducto || !cantidad || !nombreCliente) {
+    alert("Por favor, ingresa todos los datos del producto.");
+    return;
+  }
 
-      if (isNaN(cantidad) || cantidad <= 0) {
-        alert("Por favor ingresa una cantidad válida.");
-        return;
-      }
+  if (!nombreProducto) {
+    alert("Código de producto no válido.");
+    return;
+  }
 
-      const producto = productos.find(prod => prod.Codigo === codigoProducto);
+  // Agregar a la tabla de factura
+  const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
+  const nuevaFila = tabla.insertRow();
+  nuevaFila.innerHTML = `<td>${codigoProducto}</td><td>${nombreProducto}</td><td>${cantidad}</td><td>${nombreCliente}</td>`;
 
-      if (producto) {
-        // Agregar el producto a la factura
-        const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
-        const nuevaFila = tabla.insertRow();
+  // Limpiar los campos después de agregar el producto
+  document.getElementById("codigo_producto").value = "";
+  document.getElementById("cantidad").value = "";
+}
 
-        const celdaCodigo = nuevaFila.insertCell(0);
-        const celdaProducto = nuevaFila.insertCell(1);
-        const celdaCantidad = nuevaFila.insertCell(2);
+function realizarPedido() {
+  const fechaEntrega = document.getElementById("fecha_entrega").value;
+  const tabla = document.getElementById("tablaFactura").getElementsByTagName('tbody')[0];
+  const filas = tabla.getElementsByTagName("tr");
 
-        celdaCodigo.textContent = codigoProducto;
-        celdaProducto.textContent = producto.Producto;
-        celdaCantidad.textContent = cantidad;
+  if (!fechaEntrega || filas.length === 0) {
+    alert("Por favor, completa todos los datos antes de realizar el pedido.");
+    return;
+  }
 
-        // Agregar el producto al array del pedido
-        pedido.push({
-          codigo: codigoProducto,
-          producto: producto.Producto,
-          cantidad: cantidad
-        });
+  let productos = [];
+  for (let fila of filas) {
+    const columnas = fila.getElementsByTagName("td");
+    productos.push({
+      codigo: columnas[0].innerText,
+      producto: columnas[1].innerText,
+      cantidad: columnas[2].innerText,
+      cliente: columnas[3].innerText
+    });
+  }
 
-        // Limpiar los campos del formulario
-        document.getElementById("codigo_producto").value = "";
-        document.getElementById("cantidad").value = "";
-      } else {
-        alert("Producto no encontrado. Verifica el código.");
-      }
+  const formData = new FormData();
+  formData.append('fecha_entrega', fechaEntrega);
+  formData.append('productos', JSON.stringify(productos));
+
+  // URL del Google Apps Script (tu URL aquí)
+  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxi3VW4ZrAa8vGPoHdzFOeAL_gy11DZQXIbiwpDU7JAsvj7VbUfFz4ykeAH6muppi5a/exec";
+
+  fetch(googleScriptUrl, {
+    method: "POST",
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.result === "success") {
+      alert("¡Pedido realizado con éxito!");
+      document.getElementById("fecha_entrega").value = "";
+      document.getElementById("nombre_cliente").value = "";
+      tabla.innerHTML = ""; // Limpiar la tabla después de enviar el pedido
+    } else {
+      alert("Hubo un error al realizar el pedido: " + data.message);
     }
-
-    function realizarPedido() {
-      const nombreCliente = document.getElementById("nombre_cliente").value.trim();
-      const fechaEntrega = document.getElementById("fecha_entrega").value;
-
-      if (!nombreCliente) {
-        alert("Por favor ingresa el nombre del cliente.");
-        return;
-      }
-
-      if (!fechaEntrega) {
-        alert("Por favor, ingresa una fecha de entrega.");
-        return;
-      }
-
-      if (pedido.length === 0) {
-        alert("No has agregado productos. Agrega productos antes de realizar el pedido.");
-        return;
-      }
-
-      const confirmacion = confirm("¿Deseas confirmar el pedido?");
-      
-      if (confirmacion) {
-        const formData = new FormData();
-        formData.append('fecha_entrega', fechaEntrega);
-        formData.append('nombre_cliente', nombreCliente);
-        formData.append('productos', JSON.stringify(pedido));
-
-        fetch("https://script.google.com/macros/s/AKfycbxi3VW4ZrAa8vGPoHdzFOeAL_gy11DZQXIbiwpDU7JAsvj7VbUfFz4ykeAH6muppi5a/exec", {
-          method: "POST",
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.result === "success") {
-            alert("¡Pedido realizado con éxito!");
-            // Limpiar formulario y tabla
-            document.getElementById("fecha_entrega").value = "";
-            document.getElementById("nombre_cliente").value = "";
-            document.getElementById("tablaFactura").getElementsByTagName('tbody')[0].innerHTML = "";
-            pedido = [];
-          } else {
-            alert("Error en el pedido: " + data.message);
-          }
-        })
-        .catch(error => {
-          alert("Error: " + error.message);
-        });
-      } else {
-        alert("El pedido no se ha realizado.");
-      }
-    }
-  </script>
-</body>
-</html>
+  })
+  .catch(error => {
+    alert("Error: " + error.message);
+  });
+}
